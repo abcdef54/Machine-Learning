@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 from collections import Counter
-from Descriptors import BiggerThanZero
+from utils.Descriptors import BiggerThanZero
 from typing import Dict, List, Any
 
 

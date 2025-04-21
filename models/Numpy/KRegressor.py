@@ -1,6 +1,6 @@
 import numpy as np
 import numpy.typing as npt
-from Descriptors import BiggerThanZero
+from utils.Descriptors import BiggerThanZero
 from typing import Dict, Any
 
 # For testing
