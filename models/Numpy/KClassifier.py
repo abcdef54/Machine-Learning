@@ -13,7 +13,7 @@ class KClassifier:
             Args:
                 n_neighbors: int : This argument can not be smaller than 1 or an attribute exception will be raised.
                 weights: str : 'uniform' or 'distance'.
-                metric: str : 'minkowski', 'euclidean' or 'manhattan'
+                metric: str : 'minkowski', 'Euclidean' or 'manhattan'
                 p: int
         """
         if weights.lower() not in {'uniform', 'distance'}:
