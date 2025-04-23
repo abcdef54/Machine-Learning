@@ -1,6 +1,5 @@
 import numpy as np
 import numpy.typing as npt
-from typing import Dict
 
 # For testing
 from sklearn.datasets import load_diabetes
