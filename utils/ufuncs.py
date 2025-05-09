@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, Dataset
+from torch.utils.data import DataLoader, Dataset, TensorDataset
 from torchvision import datasets, transforms
 
 import matplotlib.pyplot as plt
@@ -190,7 +190,7 @@ def make_image_dataloader(train_dataset: torch.utils.data.Dataset, test_dataset:
     return train_dataloader, test_dataloader
 
 
-def _to_tensors(*args, dtype: torch.dtype) -> Tuple[torch.Tensor]:
+def to_tensors(*args, dtype: torch.dtype) -> Tuple[torch.Tensor]:
         """Turn python lists or numpy ndarrays into tensors with the specified pytorch data type"""
         tensors = []
         for lis in args:
@@ -202,3 +202,20 @@ def _to_tensors(*args, dtype: torch.dtype) -> Tuple[torch.Tensor]:
                 raise TypeError('Unsupport array type, only support list and numpy ndarray.')
 
         return tuple(tensors)
+
+def make_train_test_dataloader(data: torch.Tensor, labels: torch.Tensor, train_split: float,
+                                    batch_size: int = 32, shuffle: bool = True, random_state: int = 42) -> Tuple[DataLoader]:
+        """Takes in a data tensor, label tensor and return a tuple of train and test dataloader"""
+        torch.manual_seed(random_state)
+
+        train_part = int(len(data)*train_split)
+        X_train, X_test = data[:train_part], data[train_part:]
+        y_train, y_test = labels[:train_part], labels[train_part:]
+
+        train_dataset = TensorDataset(X_train, y_train)
+        test_dataset = TensorDataset(X_test, y_test)
+
+        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
+        test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=shuffle)
+
+        return train_dataloader, test_dataloader

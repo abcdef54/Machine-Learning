@@ -1,10 +1,9 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, TensorDataset
 
-from typing import Iterable, Tuple
-import numpy as np
+from utils.ufuncs import to_tensors, make_train_test_dataloader
+from typing import Iterable
 
 
 class CustomLinearModel(torch.nn.Module):
@@ -31,7 +30,7 @@ class CustomLinearModel(torch.nn.Module):
 
 class LinearModel:
     def __init__(self, in_features: int, out_features: int, hidden_layers: int = 0, hidden_units: int = 16,
-                 lr: float = 1e-3, device: torch.device = None, random_state: int = None, optimizer: str = 'SGD',
+                 lr: float = 1e-3, device: torch.device = None, random_state: int = 42, optimizer: str = 'SGD',
                  loss_function: str = 'MSE', task: str = 'regression') -> None:
         torch.manual_seed(random_state)
         self.model = CustomLinearModel(in_features, out_features, hidden_layers, hidden_units).to(device)
@@ -69,15 +68,15 @@ class LinearModel:
             raise ValueError('Please train more than 0 epoch.')
         
         # Turn the inputs to tensors
-        data = self._to_tensors(data, dtype=torch.float32)
+        data = to_tensors(data, dtype=torch.float32)
         
         if self.task == 'regression':
-            labels = self._to_tensors(labels, dtype=torch.float32)
+            labels = to_tensors(labels, dtype=torch.float32)
         elif self.task == 'classification':
-            labels = self._to_tensors(labels, dtype=torch.long)
+            labels = to_tensors(labels, dtype=torch.long)
         
         # Make train test data loader
-        train_dataloader, test_dataloader = self._make_train_test_dataloader(data, labels, train_split, batch_size, shuffle=shuffle)
+        train_dataloader, test_dataloader = make_train_test_dataloader(data, labels, train_split, batch_size, shuffle=shuffle)
         
         # Fit the model
         for epoch in range(max_epochs):
@@ -142,33 +141,3 @@ class LinearModel:
             test_loss += loss
         
         return test_loss
-
-    @staticmethod
-    def _to_tensors(*args, dtype: torch.dtype) -> Tuple[torch.Tensor]:
-        """Turn python lists or numpy ndarrays into tensors"""
-        tensors = []
-        for lis in args:
-            if isinstance(lis, list):
-                tensors.append(torch.tensor(lis, dtype=dtype))
-            elif isinstance(lis, np.ndarray):
-                tensors.append(torch.from_numpy(lis).type(dtype=dtype))
-            else:
-                raise TypeError('Unsupport array type, only support list and numpy ndarray.')
-
-        return tuple(tensors)
-    
-    def _make_train_test_dataloader(self, data: torch.Tensor, labels: torch.Tensor, train_split: float,
-                                    batch_size: int = 32, shuffle: bool = True) -> Tuple[DataLoader]:
-        torch.manual_seed(self.random_state)
-
-        train_part = int(len(data)*train_split)
-        X_train, X_test = data[:train_part], data[train_part:]
-        y_train, y_test = labels[:train_part], labels[train_part:]
-
-        train_dataset = TensorDataset(X_train, y_train)
-        test_dataset = TensorDataset(X_test, y_test)
-
-        train_dataloader = DataLoader(train_dataset, batch_size=batch_size, shuffle=shuffle)
-        test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=shuffle)
-
-        return train_dataloader, test_dataloader
